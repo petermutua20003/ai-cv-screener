@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Screener</title>
+<style>
+    :root {
+        --ink: #1B2A4A;
+        --paper: #F5F3EE;
+        --card: #FFFFFF;
+        --line: #DCD5C7;
+        --muted: #6E6656;
+
+        --tab-exp: #2E6F95;
+        --tab-edu: #3F7D58;
+        --tab-prj: #7A4869;
+
+        --tier-strong: #2F7D4F;
+        --tier-partial: #B8862E;
+        --tier-weak: #9C4A3A;
+    }
+
+    /* REMOVED AI FONTS - Using standard professional fonts */
+    * { box-sizing: border-box; }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background: var(--paper);
+        color: var(--ink);
+        margin: 0;
+        padding: 40px 20px;
+        line-height: 1.5;
+        font-size: 15px;
+    }
+
+    .page {
+        max-width: 780px;
+        margin: 0 auto;
+    }
+
+    /* Header */
+    .eyebrow {
+        font-size: 13px;
+        color: var(--muted);
+        text-align: center;
+        margin-bottom: 6px;
+        font-weight: normal;
+    }
+    h1 {
+        font-size: 32px;
+        font-weight: 700;
+        text-align: center;
+        margin: 0 0 8px;
+        color: var(--ink);
+    }
+    p.description {
+        text-align: center;
+        color: var(--muted);
+        max-width: 500px;
+        margin: 0 auto 32px;
+        font-size: 15px;
+    }
+
+    /* Intake Form */
+    .intake {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 28px;
+        margin-bottom: 36px;
+    }
+    .intake-field { margin-bottom: 18px; }
+    .intake-field:last-of-type { margin-bottom: 0; }
+    
+    .intake-field label.field-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 8px;
+    }
+    .field-hint {
+        font-size: 13px;
+        color: var(--muted);
+        margin: -2px 0 8px;
+    }
+    .file-drop {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border: 1.5px dashed #B8AF9B;
+        border-radius: 4px;
+        padding: 16px 18px;
+        cursor: pointer;
+        background: var(--paper);
+        transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .file-drop:hover, .file-drop:focus-within {
+        border-color: var(--tab-exp);
+        background: #EFF4F6;
+    }
+    .file-drop-icon {
+        flex-shrink: 0;
+        width: 30px;
+        height: 30px;
+        color: var(--tab-exp);
+    }
+    .file-drop-text { flex: 1; min-width: 0; }
+    .file-drop-primary {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink);
+    }
+    .file-drop-secondary {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .browse-btn {
+        flex-shrink: 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        padding: 8px 14px;
+    }
+    .file-drop:hover .browse-btn { border-color: var(--tab-exp); color: var(--tab-exp); }
+
+    .file-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+    }
+    .file-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--ink);
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        padding: 4px 9px;
+    }
+    .file-chip-num {
+        color: var(--tab-exp);
+        font-weight: 700;
+    }
+
+    button.submit-btn {
+        width: 100%;
+        margin-top: 22px;
+        padding: 14px;
+        background: var(--ink);
+        color: var(--paper);
+        border: none;
+        border-radius: 4px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    button.submit-btn:hover { background: #101d38; }
+    button.submit-btn:disabled { background: #A8A196; cursor: not-allowed; }
+
+    #loading {
+        display: none;
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 24px;
+    }
+
+    /* Results */
+    #results { display: none; margin-top: 40px; }
+    .results-heading {
+        text-align: center;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 24px;
+    }
+
+    .candidate-card {
+        position: relative;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 30px 26px 26px;
+        margin: 28px 0 20px;
+    }
+    .rank-tab {
+        position: absolute;
+        top: -13px;
+        left: 24px;
+        background: var(--ink);
+        color: var(--paper);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 11px;
+        border-radius: 3px 3px 0 0;
+    }
+
+    .candidate-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 18px;
+        margin-bottom: 18px;
+    }
+    .candidate-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0 0 6px;
+    }
+    .candidate-contact {
+        font-size: 13px;
+        color: var(--muted);
+    }
+    .candidate-contact span { display: inline-block; margin-right: 16px; }
+
+    /* Verdict Stamp - Changed font to standard Arial */
+    .verdict-stamp {
+        position: relative;
+        flex-shrink: 0;
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        border: 3px solid var(--tier-color);
+        color: var(--tier-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transform: rotate(-6deg);
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .verdict-stamp::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border: 1px dashed var(--tier-color);
+        border-radius: 50%;
+        opacity: 0.55;
+    }
+    .verdict-stamp .pct {
+        font-size: 21px;
+        line-height: 1;
+        font-weight: 700;
+    }
+    .verdict-stamp .tier-label {
+        font-size: 8px;
+        margin-top: 3px;
+        text-align: center;
+        line-height: 1.2;
+        padding: 0 6px;
+    }
+
+    /* Section Rows */
+    .section-row {
+        display: flex;
+        gap: 14px;
+        margin-bottom: 16px;
+        padding-left: 14px;
+        border-left: 3px solid var(--section-color);
+    }
+    .section-row:last-of-type { margin-bottom: 0; }
+    .section-label {
+        flex-shrink: 0;
+        width: 76px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--section-color);
+        padding-top: 2px;
+    }
+    .section-content { flex: 1; min-width: 0; font-size: 14px; }
+    .entry-header {
+        font-weight: 700;
+        color: var(--ink);
+        margin-top: 8px;
+    }
+    .entry-header:first-child { margin-top: 0; }
+    .entry-bullet {
+        color: #3a3730;
+        margin: 3px 0 3px 15px;
+        position: relative;
+    }
+    .entry-bullet::before {
+        content: "\2013";
+        position: absolute;
+        left: -15px;
+        color: var(--muted);
+    }
+
+    /* Skills */
+    .skills-section {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+    }
+    .skill-group { margin-bottom: 12px; }
+    .skill-group:last-child { margin-bottom: 0; }
+    .skill-group-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        margin-bottom: 8px;
+    }
+    .skill-tag {
+        display: inline-block;
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 3px;
+        margin: 0 6px 6px 0;
+    }
+    .tag-matched { background: #EAF3EC; color: var(--tier-strong); border: 1px solid #BFDCC6; }
+    .tag-missing { background: #F6ECE8; color: var(--tier-weak); border: 1px solid #E3C6BC; }
+    .skill-empty { color: var(--muted); font-size: 13px; font-style: italic; }
+
+    @media (max-width: 520px) {
+        .candidate-header { flex-direction: column; }
+        .section-row { flex-direction: column; gap: 4px; }
+        .section-label { width: auto; }
+    }
+</style>
+</head>
+<body>
+
+<div class="page">
+    <div class="eyebrow">Applicant Review</div>
+    <h1>CV Screener</h1>
+    <p class="description">Upload a job description and resumes — each candidate is scored on skill match and ranked automatically.</p>
+
+    <div class="intake">
+        <div class="intake-field">
+            <label class="field-label" for="jobDesc">Job description (.txt)</label>
+            <label class="file-drop" for="jobDesc">
+                <svg class="file-drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                    <path d="M12 15V4M12 4L7.5 8.5M12 4l4.5 4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="file-drop-text">
+                    <span class="file-drop-primary">Click to choose a file</span>
+                    <span class="file-drop-secondary" id="jobDescLabel">No file selected</span>
+                </span>
+                <span class="browse-btn">Browse</span>
+            </label>
+            <input type="file" id="jobDesc" accept=".txt" required hidden>
+        </div>
+
+        <div class="intake-field">
+            <label class="field-label" for="resumes">Candidate resumes (.pdf)</label>
+            <p class="field-hint">You can select more than one file: hold Ctrl (Windows) or Cmd (Mac) while clicking files in the dialog.</p>
+            <label class="file-drop" for="resumes">
+                <svg class="file-drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                    <path d="M12 15V4M12 4L7.5 8.5M12 4l4.5 4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="file-drop-text">
+                    <span class="file-drop-primary">Click to choose resumes</span>
+                    <span class="file-drop-secondary" id="resumesLabel">No files selected</span>
+                </span>
+                <span class="browse-btn">Browse</span>
+            </label>
+            <input type="file" id="resumes" accept=".pdf" multiple required hidden>
+            <div class="file-list" id="resumesFileList"></div>
+        </div>
+
+        <button class="submit-btn" id="analyzeBtn" onclick="analyzeResumes()">Rank Candidates</button>
+    </div>
+
+    <div id="loading">Reading resumes and scoring matches...</div>
+    <div id="results"></div>
+</div>
+
+<script>
+    document.getElementById('jobDesc').addEventListener('change', function () {
+        const label = document.getElementById('jobDescLabel');
+        label.textContent = this.files[0] ? this.files[0].name : 'No file selected';
+    });
+
+    document.getElementById('resumes').addEventListener('change', function () {
+        const label = document.getElementById('resumesLabel');
+        const list = document.getElementById('resumesFileList');
+        list.innerHTML = '';
+
+        if (this.files.length === 0) {
+            label.textContent = 'No files selected';
+            return;
+        }
+
+        label.textContent = this.files.length === 1
+            ? this.files[0].name
+            : `${this.files.length} files selected`;
+
+        Array.from(this.files).forEach((file, i) => {
+            const chip = document.createElement('span');
+            chip.className = 'file-chip';
+            chip.innerHTML = `<span class="file-chip-num">${i + 1}</span> ${file.name}`;
+            list.appendChild(chip);
+        });
+    });
+
+    function scoreTier(score) {
+        if (score >= 70) return { label: 'STRONG MATCH', cls: 'strong', color: 'var(--tier-strong)' };
+        if (score >= 40) return { label: 'PARTIAL MATCH', cls: 'partial', color: 'var(--tier-partial)' };
+        return { label: 'WEAK MATCH', cls: 'weak', color: 'var(--tier-weak)' };
+    }
+
+    async function analyzeResumes() {
+        const btn = document.getElementById('analyzeBtn');
+        const resultsDiv = document.getElementById('results');
+        const loadingDiv = document.getElementById('loading');
+
+        const jobDescFile = document.getElementById('jobDesc').files[0];
+        const resumeFiles = document.getElementById('resumes').files;
+
+        if (!jobDescFile || resumeFiles.length === 0) {
+            alert("Please upload both a job description and at least one resume.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('job_desc', jobDescFile);
+        for (let i = 0; i < resumeFiles.length; i++) {
+            formData.append('resumes', resumeFiles[i]);
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+        resultsDiv.style.display = 'none';
+        loadingDiv.style.display = 'block';
+
+        try {
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            loadingDiv.style.display = 'none';
+
+            if (data.error) {
+                alert(data.error);
+            } else {
+                displayResults(data);
+            }
+
+        } catch (error) {
+            loadingDiv.style.display = 'none';
+            alert("Error connecting to the server. Is the Flask app running?");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Rank Candidates";
+        }
+    }
+
+    function displayResults(candidates) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '<div class="results-heading">Ranked Candidates</div>';
+
+        candidates.forEach((cand, index) => {
+            const tier = scoreTier(cand.score);
+
+            const matchedTags = cand.matched.length
+                ? cand.matched.map(s => `<span class="skill-tag tag-matched">${s}</span>`).join('')
+                : '<span class="skill-empty">None found</span>';
+
+            const missingTags = cand.missing.length
+                ? cand.missing.map(s => `<span class="skill-tag tag-missing">${s}</span>`).join('')
+                : '<span class="skill-empty">None missing</span>';
+
+            const card = document.createElement('div');
+            card.className = 'candidate-card';
+
+            card.innerHTML = `
+                <div class="rank-tab">Candidate #${index + 1}</div>
+
+                <div class="candidate-header">
+                    <div>
+                        <div class="candidate-name">${cand.candidate_name || cand.name}</div>
+                        <div class="candidate-contact">
+                            <span>${cand.email || 'Not found'}</span>
+                            <span>${cand.phone || 'Not found'}</span>
+                        </div>
+                    </div>
+                    <div class="verdict-stamp" style="--tier-color: ${tier.color}">
+                        <div class="pct">${cand.score}%</div>
+                        <div class="tier-label">${tier.label}</div>
+                    </div>
+                </div>
+
+                <div class="section-row" style="--section-color: var(--tab-exp)">
+                    <div class="section-label">Experience</div>
+                    <div class="section-content">${cand.exp_context}</div>
+                </div>
+
+                <div class="section-row" style="--section-color: var(--tab-edu)">
+                    <div class="section-label">Education</div>
+                    <div class="section-content">${cand.edu_context}</div>
+                </div>
+
+                <div class="section-row" style="--section-color: var(--tab-prj)">
+                    <div class="section-label">Project</div>
+                    <div class="section-content">${cand.proj_context}</div>
+                </div>
+
+                <div class="skills-section">
+                    <div class="skill-group">
+                        <div class="skill-group-label">Skills matched</div>
+                        <div>${matchedTags}</div>
+                    </div>
+                    <div class="skill-group">
+                        <div class="skill-group-label">Skills missing</div>
+                        <div>${missingTags}</div>
+                    </div>
+                </div>
+            `;
+            resultsDiv.appendChild(card);
+        });
+
+        resultsDiv.style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
