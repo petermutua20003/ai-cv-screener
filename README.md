@@ -1,6 +1,6 @@
 # AI-Powered CV Screener & Ranker
 
-Live Demo: https://your-live-demo-link.netlify.app
+Live Demo: https://charming-basbousa-be7356.netlify.app/
 
 An automated resume screening tool that parses PDF resumes, extracts key information (skills, experience, education, projects), and ranks candidates against a provided job description using a weighted scoring algorithm.
 
